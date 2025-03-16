@@ -1,0 +1,222 @@
+# import os
+# from dotenv import load_dotenv
+# from langchain.agents import Tool, AgentExecutor, create_react_agent
+# from langchain_openai import ChatOpenAI
+# from langchain.memory import ConversationBufferMemory
+# from langchain_community.vectorstores import FAISS
+# from langchain.embeddings.openai import OpenAIEmbeddings
+# from pydantic import BaseModel, GetJsonSchemaHandler, validator
+# from pydantic_core import CoreSchema
+# from typing import Any, Dict
+
+# # Load environment variablesss
+# load_dotenv()
+
+
+# class Config(BaseModel):
+#     api_key: str
+
+#     @validator("api_key", allow_reuse=True)
+#     def validate_api_key(cls, value):
+#         if not value:
+#             raise ValueError("API key cannot be empty.")
+#         return value
+
+#     @classmethod
+#     def __get_pydantic_json_schema__(
+#         cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler
+#     ) -> Dict[str, Any]:
+#         json_schema = super().__get_pydantic_json_schema__(core_schema, handler)
+#         json_schema = handler.resolve_ref_schema(json_schema)
+#         json_schema.update(examples=["example_api_key"])
+#         return json_schema
+
+
+# # Verify if the API key is loaded
+# config = Config(api_key=os.getenv("OPENAI_API_KEY"))
+# if config.api_key:
+#     print("OpenAI API Key is set.")
+# else:
+#     print("OpenAI API Key is not set. Please check your configuration.")
+
+
+# class SimpleStevensAgent:
+#     def __init__(self, api_key: str, use_faiss=True):
+#         self.api_key = api_key  # Set API key directly
+#         self.llm = ChatOpenAI(temperature=0.2)
+#         self.tools = self._create_tools()
+#         self.memory = ConversationBufferMemory(
+#             memory_key="chat_history", return_messages=True
+#         )
+#         self.vectorstore = self._get_vectorstore(use_faiss)
+#         self.agent_executor = self._create_agent_executor()
+
+#     def _create_tools(self):
+#         tools = []
+#         if self.vectorstore:
+#             retriever = self.vectorstore.as_retriever(search_kwargs={"k": 3})
+#             knowledge_tool = Tool(
+#                 name="stevens_knowledge_base",
+#                 func=retriever,
+#                 description="Search for information about Stevens Institute of Technology.",
+#             )
+#             tools.append(knowledge_tool)
+#         return tools
+
+#     def _get_vectorstore(self, use_faiss):
+#         """Initialize or load the vector database"""
+#         try:
+#             embeddings = OpenAIEmbeddings()
+#             if use_faiss and os.path.exists("faiss_index"):
+#                 return FAISS.load_local("faiss_index", embeddings)
+#             else:
+#                 return None
+#         except Exception as e:
+#             print(f"Error loading vector store: {str(e)}")
+#             return None
+
+#     def _create_agent_executor(self):
+#         """Create the agent executor with tools and memory"""
+#         prompt = "You are StevensAI, a helpful assistant..."
+#         agent = create_react_agent(llm=self.llm, tools=self.tools, prompt=prompt)
+#         return AgentExecutor(agent=agent, tools=self.tools, memory=self.memory)
+
+#     def query(self, user_input):
+#         """Process a user query and return the agent's response"""
+#         try:
+#             response = self.agent_executor.invoke({"input": user_input})
+#             return response["output"]
+#         except Exception as e:
+#             return f"I encountered an error: {str(e)}."
+
+
+# def get_simple_agent(api_key: str, use_faiss=True):
+#     """Get or create a singleton agent instance"""
+#     return SimpleStevensAgent(api_key=api_key, use_faiss=use_faiss)
+
+
+# # Load environment variables
+# load_dotenv()
+
+# # Verify if the API key is loaded
+# api_key = os.getenv("OPENAI_API_KEY")
+# if api_key:
+#     print("OpenAI API Key is set.")
+# else:
+#     raise ValueError("OpenAI API Key is not set. Please check your configuration.")
+
+# # Create an agent instancess
+# agent_instance = get_simple_agent(api_key)
+
+
+# ------------------------------------------------------
+import os
+from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain.memory import ConversationBufferMemory
+from langchain_community.vectorstores import FAISS
+from langchain.agents import (
+    AgentExecutor,
+    Tool,
+    create_react_agent,
+    AgentType,
+    initialize_agent,
+)
+from langchain.chains import LLMChain
+from langchain.prompts import PromptTemplate
+
+# from langchain.agents.react.base import ReactAgent
+
+# Load API keys
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+
+class StevensChatbot:
+    def __init__(self):
+        """Initialize the chatbot with LLM, vector store, and tools."""
+        self.llm = ChatOpenAI(temperature=0.2)
+        self.memory = ConversationBufferMemory(
+            memory_key="chat_history", return_messages=True
+        )
+
+        # Load FAISS vector store
+        self.vectorstore = FAISS.load_local(
+            "faiss_index", OpenAIEmbeddings(), allow_dangerous_deserialization=True
+        )
+
+        # Create retrieval tool
+        retriever = self.vectorstore.as_retriever(search_kwargs={"k": 3})
+        self.tools = [
+            Tool(
+                name="Stevens Knowledge Base",
+                func=retriever.get_relevant_documents,
+                description="Fetch information about Stevens Institute of Technology.",
+            )
+        ]
+
+        # Define proper PromptTemplate
+        self.prompt = PromptTemplate(
+            input_variables=["input", "agent_scratchpad", "tools", "tool_names"],
+            template="""
+            You are a knowledgeable AI assistant trained on information about Stevens Institute of Technology.
+
+            - If a user asks about **Stevens**, provide detailed, accurate answers.
+            - If a user asks an **irrelevant** question, simply reply: "This is not related to Stevens Institute Of Technology."
+            - If the question is about **critical topics** (fees, admissions, etc.), add this:
+              "[INFO]: Please contact the relevant department for more details."
+
+            Use OpenAI’s general knowledge when needed.
+
+            User: {input}
+            Thought: Let's analyze the question.
+            {agent_scratchpad}
+            Tools: {tools}
+            Tool Names: {tool_names}
+            Response:
+            """,
+        )
+
+        # Create LLM-powered agent
+        self.agent_executor = AgentExecutor(
+            agent=create_react_agent(
+                llm=self.llm, tools=self.tools, prompt=self.prompt
+            ),
+            tools=self.tools,
+            memory=self.memory,
+            handle_parsing_errors=True,  # Handles any parsing issues automatically
+        )
+
+    def query(self, user_input):
+        """Process a user query and return the AI's response."""
+        try:
+            # Step 1: Ask OpenAI if the query is relevant to Stevens
+            relevance_check = self.llm.invoke(
+                f"Is the following question related to Stevens Institute of Technology? Answer 'yes' or 'no' only.\n\nQuestion: {user_input}"
+            ).content.lower()
+
+            if "no" in relevance_check:
+                return "This is not related to Stevens Institute Of Technology."
+
+            # Step 2: Get AI response
+            response = self.agent_executor.invoke({"input": user_input})["output"]
+
+            # Step 3: Check if the question is critical (fees, admissions, etc.)
+            critical_keywords = [
+                "fees",
+                "admission",
+                "tuition",
+                "scholarship",
+                "financial aid",
+            ]
+            if any(keyword in user_input.lower() for keyword in critical_keywords):
+                response = f"[INFO]: {response} Please contact the relevant department for more details."
+
+            return response
+        except Exception as e:
+            return f"❌ Error: {str(e)}"
+
+
+def get_stevens_agent():
+    """Create a chatbot instance."""
+    return StevensChatbot()
