@@ -34,10 +34,10 @@ https://github.com/user-attachments/assets/a8a8bfb2-c6ed-4332-9e28-92261f9c3c12
    - Get real-time, generalized answers—anytime, anywhere.
 
 ## Tech Stack 🛠️
-- **Frontend:** Streamlit (for a sleek, interactive UI)
-- **Backend:** Python (With LLM), Langchain, 
-- **Database:** Pickle (for storing university-specific knowledge)
-- **Deployment:** AWS - Cloud-based hosting  (FUTURE)
+- **Frontend:** HTML,CSS, JS, Streamlit (for a sleek, interactive UI for ChatBot)
+- **Backend:** Python (With LLM), Langchain, RAG)
+- **Database:** Vector DB, Pickle (for storing university-specific knowledge)
+- **Deployment:** Azure - Cloud-based hosting  (FUTURE)
 
 ## Future Plans 🚀
 - AI-powered agents for **all departments**, including HR, Payroll, Campus Graduate Services, and more.
@@ -46,7 +46,7 @@ https://github.com/user-attachments/assets/a8a8bfb2-c6ed-4332-9e28-92261f9c3c12
 
 
 ## Contributing 🤝
-Have ideas to improve the chatbot? Feel free to email me @achampan1@stevens.edu
+Have ideas to improve the chatbot? Feel free to email support.duck@gmail.com
 
 ## License 📜
 This project is licensed under the MIT License.
