@@ -95,6 +95,13 @@ from langchain_community.document_loaders import UnstructuredURLLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
+import shutil
+import logging  # Import the logging module
+
+# Configure logging (optional, but helpful for debugging)
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 # Load API keys
 load_dotenv()
@@ -102,112 +109,69 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # URLs to scrape
 urls = [
+    # "https://www.stevens.edu/about",
+    # "https://www.stevens.edu/academics",
+    # "https://www.stevens.edu/campus-life",
+    # "https://www.stevens.edu/admissions",
+    # "https://www.stevens.edu/research",
+    "https://www.stevens.edu/research/research-centers-and-labs",
     "https://www.stevens.edu/about",
-    "https://www.stevens.edu/academics",
-    "https://www.stevens.edu/campus-life",
-    "https://www.stevens.edu/admissions",
-    "https://www.stevens.edu/research",
-]
-
-def ingest_data():
-    """Fetches data from Stevens URLs, processes it, and stores embeddings."""
-    print("🔄 Loading data from Stevens website...")
-    
-    loader = UnstructuredURLLoader(urls=urls)
-    documents = loader.load()
-
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-    texts = text_splitter.split_documents(documents)
-
-    print(f"✅ Processed {len(texts)} text chunks.")
-
-    embeddings = OpenAIEmbeddings()
-    db = FAISS.from_documents(texts, embeddings)
-
-    db.save_local("faiss_index")  # Save for retrieval
-    print("✅ FAISS vector store saved successfully.")
-
-if __name__ == "__main__":
-    ingest_data()
-import os
-from dotenv import load_dotenv
-from langchain_community.document_loaders import UnstructuredURLLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import FAISS
-from langchain_openai import OpenAIEmbeddings
-
-# Load API keys
-load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-# URLs to scrape
-urls = [
-    "https://www.stevens.edu/about",
-    "https://www.stevens.edu/academics",
-    "https://www.stevens.edu/campus-life",
-    "https://www.stevens.edu/admissions",
-    "https://www.stevens.edu/research",
-]
-
-def ingest_data():
-    """Fetches data from Stevens URLs, processes it, and stores embeddings."""
-    print("🔄 Loading data from Stevens website...")
-    
-    loader = UnstructuredURLLoader(urls=urls)
-    documents = loader.load()
-
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-    texts = text_splitter.split_documents(documents)
-
-    print(f"✅ Processed {len(texts)} text chunks.")
-
-    embeddings = OpenAIEmbeddings()
-    db = FAISS.from_documents(texts, embeddings)
-
-    db.save_local("faiss_index")  # Save for retrieval
-    print("✅ FAISS vector store saved successfully.")
-
-if __name__ == "__main__":
-    ingest_data()
-import os
-from dotenv import load_dotenv
-from langchain_community.document_loaders import UnstructuredURLLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import FAISS
-from langchain_openai import OpenAIEmbeddings
-
-# Load API keys
-load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-# URLs to scrape
-urls = [
-    "https://www.stevens.edu/about",
-    "https://www.stevens.edu/academics",
-    "https://www.stevens.edu/campus-life",
-    "https://www.stevens.edu/admissions",
-    "https://www.stevens.edu/research",
+    "https://www.stevens.edu/stevens-institute-for-artificial-intelligence",
+    "https://www.stevens.edu/davidson-laboratory",
+    "https://www.stevens.edu/craft",
 ]
 
 
 def ingest_data():
     """Fetches data from Stevens URLs, processes it, and stores embeddings."""
     print("🔄 Loading data from Stevens website...")
+    logging.info("Starting data ingestion process.")  # Log the start
 
-    loader = UnstructuredURLLoader(urls=urls)
-    documents = loader.load()
+    try:
+        loader = UnstructuredURLLoader(urls=urls)
+        documents = loader.load()  # Load all documents at once
 
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-    texts = text_splitter.split_documents(documents)
+        # Log document loading success
+        logging.info(f"Successfully loaded {len(documents)} documents.")
 
-    print(f"✅ Processed {len(texts)} text chunks.")
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=2000, chunk_overlap=300
+        )  # Adjusted chunk size and overlap
 
-    embeddings = OpenAIEmbeddings()
-    db = FAISS.from_documents(texts, embeddings)
+        texts = text_splitter.split_documents(documents)
 
-    db.save_local("faiss_index")  # Save for retrieval
-    print("✅ FAISS vector store saved successfully.")
+        # Log success of splitting
+        logging.info(f"Split documents into {len(texts)} text chunks.")
+
+        print(f"✅ Processed {len(texts)} text chunks.")
+
+        embeddings = OpenAIEmbeddings()
+        db = FAISS.from_documents(texts, embeddings)
+
+        db.save_local("faiss_index")  # Save for retrieval
+        print("✅ FAISS vector store saved successfully.")
+        logging.info("FAISS vector store saved successfully.")  # Log the save
+
+    except Exception as e:
+        print(f"❌ Error during data ingestion: {e}")
+        logging.error(
+            f"Error during data ingestion: {e}", exc_info=True
+        )  # Log the error
+
+
+def clear_vector_store(directory="faiss_index"):
+    """Clears the FAISS vector store directory."""
+    try:
+        shutil.rmtree(directory)
+        print(f"✅ Successfully cleared the vector store at '{directory}'.")
+    except FileNotFoundError:
+        print(
+            f"⚠️ Vector store directory '{directory}' not found.  It may not exist yet."
+        )
+    except Exception as e:
+        print(f"❌ Error clearing vector store: {e}")
 
 
 if __name__ == "__main__":
+    # clear_vector_store() #Uncomment this line to clear the vector store
     ingest_data()
