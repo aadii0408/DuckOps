@@ -97,6 +97,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
 import shutil
 import logging  # Import the logging module
+import time
 
 # Configure logging (optional, but helpful for debugging)
 logging.basicConfig(
@@ -109,13 +110,8 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # URLs to scrape
 urls = [
-    # "https://www.stevens.edu/about",
-    # "https://www.stevens.edu/academics",
-    # "https://www.stevens.edu/campus-life",
-    # "https://www.stevens.edu/admissions",
-    # "https://www.stevens.edu/research",
-    "https://www.stevens.edu/research/research-centers-and-labs",
     "https://www.stevens.edu/about",
+    "https://www.stevens.edu/research/research-centers-and-labs",
     "https://www.stevens.edu/stevens-institute-for-artificial-intelligence",
     "https://www.stevens.edu/davidson-laboratory",
     "https://www.stevens.edu/craft",
@@ -135,7 +131,7 @@ def ingest_data():
         logging.info(f"Successfully loaded {len(documents)} documents.")
 
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=2000, chunk_overlap=300
+            chunk_size=1500, chunk_overlap=300
         )  # Adjusted chunk size and overlap
 
         texts = text_splitter.split_documents(documents)

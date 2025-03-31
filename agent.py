@@ -257,6 +257,8 @@ class StevensAgent:
 
             If the question is about **critical topics** (fees, admissions, etc.), add this: "[INFO]: Please contact the relevant department for more details."
 
+            If the question   is about **Stevens Latest News**, provide a brief news on the followimg context data. add this: "[INFO]: Please visit the Stevens News page for the latest updates."
+
             Context: {context}
 
             Question: {question}

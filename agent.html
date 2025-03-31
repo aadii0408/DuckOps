@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DuckBOT - Stevens University AI Agents</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background-color: #ffffff;
+            color: #333333;
+            line-height: 1.6;
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: white;
+            padding: 20px 10%;
+            border-radius: 50px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin: 20px auto;
+            max-width: 1200px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .nav-links a {
+            color: #666;
+            font-weight: 500;
+            transition: color 0.3s;
+            text-decoration: none;
+        }
+        
+        .nav-links a:hover {
+            color: #333;
+        }
+        
+        .nav-links a.active {
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .section {
+            padding: 3rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 2.5rem;
+            color: #000000;
+            font-weight: 600;
+        }
+        
+        .agent-cards-container {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 1.5rem;
+            padding: 1rem 0;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .agent-card {
+            flex: 0 0 280px;
+            height: 380px;
+            background-color: #000000;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .agent-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .agent-card-image {
+            height: 65%;
+            position: relative;
+            overflow: hidden;
+            background-color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .agent-card-content {
+            padding: 1.2rem;
+            color: white;
+            height: 35%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .agent-card-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 0.4rem;
+        }
+        
+        .agent-card-task {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            flex-grow: 1;
+        }
+        
+        .agent-logo {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 26px;
+            height: 26px;
+            background-color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #000;
+            font-size: 0.7rem;
+        }
+        
+        .coming-soon {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 0;
+            font-weight: bold;
+            letter-spacing: 1px;
+            transform: translateY(-50%);
+        }
+        
+        .try-now-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+        
+        .agent-card-image:hover .try-now-button {
+            opacity: 1;
+        }
+        
+        .try-now-button:hover {
+            background-color: #0056b3;
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+        
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .agent-card-image:hover .image-overlay {
+            opacity: 1;
+        }
+        
+        .university-svg {
+            width: 85%;
+            height: 85%;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMDAgMTAwIiBmaWxsPSJub25lIj4KICA8cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0idHJhbnNwYXJlbnQiLz4KICA8dGV4dCB4PSIxMCIgeT0iNzAiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iNjAiIGZpbGw9IiMwMDAiPkR1Y2tCT1Q8L3RleHQ+Cjwvc3ZnPg=="
+                alt="DuckBOT Logo" style="width: 200px; height: auto;">
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="features.html">Features</a>
+            <a href="#about">About</a>
+            <a href="contact.html">Contact</a>
+        </div>
+    </nav>
+
+    <section class="section" id="agents">
+        <h2 class="section-title">Stevens Agents</h2>
+        <div class="agent-cards-container">
+            <div class="agent-card">
+                <div class="agent-card-image">
+                    <svg class="university-svg" viewBox="0 0 280 200" xmlns="http://www.w3.org/2000/svg">
+    <rect width="280" height="200" fill="#4a4a6a"/>
+    
+    <!-- Graduation Cap -->
+    <path d="M140 60 L200 90 L140 120 L80 90 Z" fill="#2980b9"/>
+    
+    <!-- Diploma Scroll -->
+    <path d="M100 130 L180 130 C190 130, 195 135, 195 140 C195 145, 190 150, 180 150 L100 150 C90 150, 85 145, 85 140 C85 135, 90 130, 100 130 Z" fill="#34495e"/>
+    
+    <!-- Guidance Icon (Signpost) -->
+    <path d="M140 20 L150 40 L130 40 Z" fill="#e74c3c"/>
+    <rect x="137" y="40" width="6" height="20" fill="#2c3e50"/>
+    <path d="M135 60 L145 70 L155 70 L165 60" stroke="#2c3e50" stroke-width="3" fill="none"/>
+    
+    <!-- <text x="140" y="100" font-family="Arial" font-size="20" fill="white" text-anchor="middle"></text> -->
+    
+    <rect x="50" y="170" width="180" height="20" rx="5" fill="#2c3e50"/>
+    <text x="140" y="185" font-family="Arial" font-size="12" fill="white" text-anchor="middle">Your Stevens Advisor</text>
+</svg>
+                    <div class="image-overlay"></div>
+                    <button class="try-now-button">Try Now</button>
+                </div>
+                <div class="agent-card-content">
+                    <div class="agent-card-name">Emma</div>
+                    <div class="agent-card-task">General Q/A Agent</div>
+                    <!-- <div class="agent-logo">DB</div> -->
+                </div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-card-image">
+                    <svg class="university-svg" viewBox="0 0 280 200" xmlns="http://www.w3.org/2000/svg">
+    <rect width="280" height="200" fill="#5a5a7a"/>
+    
+    <!-- Microscope -->
+    <path d="M140 50 L160 90 L120 90 Z" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+    <rect x="135" y="90" width="10" height="40" fill="#34495e"/>
+    
+    <!-- Research Papers -->
+    <rect x="80" y="140" width="60" height="40" rx="5" fill="#2ecc71" transform="rotate(-10 80 140)"/>
+    <rect x="100" y="130" width="60" height="40" rx="5" fill="#e74c3c" transform="rotate(5 100 130)"/>
+    <rect x="120" y="120" width="60" height="40" rx="5" fill="#f39c12"/>
+    
+    <!-- Citation Marks -->
+    <text x="90" y="50" font-family="Arial" font-size="10" fill="white">[1]</text>
+    <text x="180" y="70" font-family="Arial" font-size="10" fill="white">[2]</text>
+    
+    <!-- <text x="140" y="80" font-family="Arial" font-size="16" fill="white" text-anchor="middle">Research Assistant</text> -->
+    
+    <rect x="50" y="170" width="180" height="20" rx="5" fill="#34495e"/>
+    <text x="140" y="185" font-family="Arial" font-size="12" fill="white" text-anchor="middle"> Research | Professors</text>
+</svg>
+                    <div class="image-overlay"></div>
+                    <button class="try-now-button">Try Now</button>
+                </div>
+                <div class="agent-card-content">
+                    <div class="agent-card-name">Alex</div>
+                    <div class="agent-card-task">Professors and Research Agent</div>
+                    <!-- <div class="agent-logo">DB</div> -->
+                </div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-card-image">
+                    <svg class="university-svg" viewBox="0 0 280 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <!-- Gradient Background -->
+                <linearGradient id="careerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#6a6a8a;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#2c3e50;stop-opacity:1" />
+                </linearGradient>
+
+                <!-- Career Path Illustration -->
+                <g id="careerPath">
+                    <path d="M10,10 Q50,50 90,10 T170,10" fill="none" stroke="#ffffff" stroke-width="2" stroke-dasharray="5,5">
+                        <animate attributeName="stroke-dashoffset" from="10" to="-10" dur="3s" repeatCount="indefinite"/>
+                    </path>
+                    <circle cx="10" cy="10" r="5" fill="#3498db">
+                        <animate attributeName="cy" values="10;15;10" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="90" cy="10" r="5" fill="#2ecc71">
+                        <animate attributeName="cy" values="10;15;10" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                    </circle>
+                    <circle cx="170" cy="10" r="5" fill="#e74c3c">
+                        <animate attributeName="cy" values="10;15;10" dur="2s" repeatCount="indefinite" begin="1s"/>
+                    </circle>
+                </g>
+
+                <!-- Career Icons -->
+                <g id="resumeIcon">
+                    <rect x="0" y="0" width="40" height="50" fill="#3498db" rx="5"/>
+                    <line x1="10" y1="15" x2="30" y2="15" stroke="white" stroke-width="2"/>
+                    <line x1="10" y1="25" x2="30" y2="25" stroke="white" stroke-width="2"/>
+                    <line x1="10" y1="35" x2="25" y2="35" stroke="white" stroke-width="2"/>
+                </g>
+            </defs>
+
+            <!-- Animated Background -->
+            <rect width="280" height="200" fill="url(#careerGradient)">
+                <animate attributeName="opacity" values="0.7;1;0.7" dur="5s" repeatCount="indefinite"/>
+            </rect>
+
+            <!-- Career Path Visualization -->
+            <use href="#careerPath" x="50" y="80" width="200" height="50"/>
+
+            <!-- Career Counselor Title -->
+            <text x="140" y="40" font-family="Arial" font-size="20" fill="white" text-anchor="middle">
+                Career Counselor
+                <animate attributeName="font-size" values="20;22;20" dur="2s" repeatCount="indefinite"/>
+            </text>
+
+            <!-- Service Description Box -->
+            <rect x="50" y="130" width="180" height="40" rx="5" fill="#2980b9" opacity="0.8">
+                <animate attributeName="fill" values="#2980b9;#3498db;#2980b9" dur="3s" repeatCount="indefinite"/>
+            </rect>
+            <text x="140" y="155" font-family="Arial" font-size="12" fill="white" text-anchor="middle">
+                Resume | Career Guidance
+            </text>
+
+            <!-- Career Icons -->
+            <use href="#resumeIcon" x="100" y="50" width="40" height="50" opacity="0.7"/>
+            <use href="#resumeIcon" x="180" y="50" width="40" height="50" opacity="0.7" transform="rotate(15 200 70)"/>
+        </svg>
+                    <div class="image-overlay"></div>
+                    <button class="try-now-button">Try Now</button>
+                </div>
+                <div class="agent-card-content">
+                    <div class="agent-card-name">Jack</div>
+                    <div class="agent-card-task">Career & Resume Guidance</div>
+                </div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-card-image">
+                    <div class="coming-soon">COMING SOON</div>
+                </div>
+                <div class="agent-card-content">
+                    <div class="agent-card-name">Sophia</div>
+                    <div class="agent-card-task">Campus Life Advisor</div>
+                    <!-- <div class="agent-logo">DB</div> -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        document.querySelectorAll('.try-now-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const agentName = this.closest('.agent-card').querySelector('.agent-card-name').textContent;
+                const agentTask = this.closest('.agent-card').querySelector('.agent-card-task').textContent;
+                alert(`Starting ${agentName}: ${agentTask}`);
+            });
+
+        });
+    </script>
+</body>
+
+</html>
