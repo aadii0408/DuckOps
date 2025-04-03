@@ -223,103 +223,200 @@
 
 
 # try 3------------------------------------------------------------------------
+# import os
+# from dotenv import load_dotenv
+# from langchain_openai import OpenAIEmbeddings
+# from langchain_community.vectorstores import FAISS
+# from langchain_core.prompts import PromptTemplate
+# from langchain_openai import ChatOpenAI, OpenAI
+# from langchain.chains.llm import LLMChain
+# from langchain.chains import RetrievalQA
+# from langchain_community.document_loaders import UnstructuredURLLoader
+# from langchain.text_splitter import RecursiveCharacterTextSplitter
+# import re
+
+# # Load API keys
+# load_dotenv()
+# OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+
+# class StevensAgent:
+#     """AI agent for answering questions about Stevens Institute using FAISS and OpenAI."""
+
+#     def __init__(self):
+#         """Initialize the agent by loading the FAISS index and setting up the retrieval chain."""
+#         self.embeddings = OpenAIEmbeddings()
+#         self.db = FAISS.load_local("faiss_index", self.embeddings)  # Load FAISS index
+
+#         self.retriever = self.db.as_retriever()
+#         self.qa_chain = RetrievalQA.from_chain_type(
+#             llm=OpenAI(model_name="gpt-4o", temperature=0), retriever=self.retriever
+#         )  # Use GPT-4 for better formatting
+#         self.prompt = PromptTemplate(
+#             input_variables=["context", "question"],
+#             template="""You are StevensAI, a helpful assistant trained on information about Stevens Institute of Technology.
+
+#             If a user asks about **Stevens research labs**, provide a detailed, accurate list of labs based ONLY on the following context. If the context doesn't contain the names or information, explicitly say "I don't have complete information on the list of research labs in the context, but here is what I was able to identify:".  Do NOT use outside information.  Return your answer in  list format with "Research Lab Name" and "Description". Be as concise and give brief in the description. If there are more than 7 research labs, provide all of them.
+
+#             If a user asks an **irrelevant** question, simply reply: "This is not related to Stevens Institute of Technology."
+
+#             If the question is about **critical topics** (fees, admissions, etc.), add this: "[INFO]: Please contact the relevant department for more details."
+
+#             If the question   is about **Stevens Latest News**, provide a brief news on the followimg context data. add this: "[INFO]: Please visit the Stevens News page for the latest updates."
+
+#             Context: {context}
+
+#             Question: {question}
+
+#             Answer:
+#             """,
+#         )
+#         self.llm_chain = LLMChain(llm=self.llm, prompt=self.prompt)
+
+#     def load_vector_store(self, vector_store_path):
+#         """Loads the FAISS vector store from the specified path."""
+#         try:
+#             embeddings = OpenAIEmbeddings()
+#             db = FAISS.load_local(
+#                 vector_store_path, embeddings, allow_dangerous_deserialization=True
+#             )
+#             print("✅ Vector store loaded successfully.")
+#             return db
+#         except Exception as e:
+#             print(f"❌ Error loading vector store: {e}")
+#             return None  # Or handle the error as appropriate
+
+#     def query(self, query):
+#         """Queries the vector store and returns an answer, or a default message."""
+#         if not self.db:
+#             return "❌ Vector store not loaded. Please ingest data first."
+
+#         if not self.retriever:
+#             return "❌ Retriever not initialized.  Check vector store loading."
+
+#         # Fetch relevant documents
+#         relevant_docs = self.retriever.get_relevant_documents(query)
+
+#         if not relevant_docs:
+#             return "This is not related to Stevens Institute Of Technology."
+
+#         # Limit the number of documents to avoid exceeding context window
+#         num_docs = min(5, len(relevant_docs))  # Or adjust this number
+#         relevant_docs = relevant_docs[:num_docs]
+
+#         context = "\n".join([doc.page_content for doc in relevant_docs])  # Combine docs
+
+#         # Pass the question and combined context to the LLMChain
+#         try:
+#             response = self.llm_chain.invoke(
+#                 {"context": context, "question": query}
+#             )  # use invoke instead of run
+
+#             # Basic cleaning - remove extra whitespace
+#             response = response["text"].strip()  # Access output using "text"
+
+#             # Check if the response contains lab names (crude check)
+#             if (
+#                 "lab" not in response.lower()
+#                 and "I don't know" not in response.lower()
+#                 and "I don't have information" not in response.lower()
+#             ):
+#                 return "I am unable to provide information"
+
+#             return response  # Return the cleaned response
+
+#         except Exception as e:
+#             print(f"❌ Error during LLMChain run: {e}")
+#             return "An error occurred while processing your request."
+
+
+# -----------------------------------------------------------------------------------------
+# try 5
 import os
 from dotenv import load_dotenv
-from langchain_openai import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain.chains.llm import LLMChain
+from langchain.chains import RetrievalQA
+from langchain_core.prompts import PromptTemplate
 from langchain_community.vectorstores import FAISS
-from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate
-from langchain_openai import ChatOpenAI
-import re
 
-# Load API keys
+# Load environment variables
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
 class StevensAgent:
-    def __init__(self, vector_store_path="faiss_index"):
-        self.db = self.load_vector_store(vector_store_path)
-        if self.db:  # Only create the retriever if the DB loaded successfully
-            self.retriever = self.db.as_retriever()
-        else:
-            self.retriever = None  # Set retriever to None if DB load fails
-        self.llm = ChatOpenAI(
-            model_name="gpt-4", temperature=0.5
-        )  # Use GPT-4 for better formatting
+    def __init__(self):
+        self.embeddings = OpenAIEmbeddings()
+        self.db = FAISS.load_local(
+            "faiss_index", self.embeddings, allow_dangerous_deserialization=True
+        )
+        self.retriever = self.db.as_retriever()
+        self.qa_chain = RetrievalQA.from_chain_type(
+            llm=ChatOpenAI(model="gpt-4o", temperature=0), retriever=self.retriever
+        )
+
         self.prompt = PromptTemplate(
             input_variables=["context", "question"],
-            template="""You are StevensAI, a helpful assistant trained on information about Stevens Institute of Technology.
+            template="""
+You are StevensAI, a helpful assistant trained on information about Stevens Institute of Technology.
 
-            If a user asks about **Stevens research labs**, provide a detailed, accurate list of labs based ONLY on the following context. If the context doesn't contain the names or information, explicitly say "I don't have complete information on the list of research labs in the context, but here is what I was able to identify:".  Do NOT use outside information.  Return your answer in  list format with "Research Lab Name" and "Description". Be as concise and give brief in the description. If there are more than 7 research labs, provide all of them.
+- If a user asks about **Stevens research labs**, provide a detailed, accurate list based ONLY on the context. If data is incomplete, say so. Return results in a list format.
+- If a user asks an **irrelevant** question, respond: "This is not related to Stevens Institute Of Technology."
+- If the question is about **critical topics** (fees, admissions, tuition, scholarships, financial aid), append: "[INFO]: Please contact the relevant department for more details."
+- If the question is about **Stevens Latest News**, answer from context and append: "[INFO]: Please visit the Stevens News page for the latest updates."
 
-            If a user asks an **irrelevant** question, simply reply: "This is not related to Stevens Institute of Technology."
+Context: {context}
 
-            If the question is about **critical topics** (fees, admissions, etc.), add this: "[INFO]: Please contact the relevant department for more details."
+Question: {question}
 
-            If the question   is about **Stevens Latest News**, provide a brief news on the followimg context data. add this: "[INFO]: Please visit the Stevens News page for the latest updates."
-
-            Context: {context}
-
-            Question: {question}
-
-            Answer:
+Answer:
             """,
         )
-        self.llm_chain = LLMChain(llm=self.llm, prompt=self.prompt)
 
-    def load_vector_store(self, vector_store_path):
-        """Loads the FAISS vector store from the specified path."""
+        self.llm_chain = LLMChain(
+            llm=ChatOpenAI(model="gpt-4o", temperature=0), prompt=self.prompt
+        )
+
+    def get_response(self, user_query):
+        if not self.db or not self.retriever:
+            return "❌ Error: Vector store not initialized."
+
         try:
-            embeddings = OpenAIEmbeddings()
-            db = FAISS.load_local(
-                vector_store_path, embeddings, allow_dangerous_deserialization=True
+            # Step 1: Relevance check using LLM
+            relevance_check = (
+                ChatOpenAI(model="gpt-4o", temperature=0)
+                .invoke(
+                    f"Is the following question about Stevens Institute of Technology? Answer 'yes' or 'no'.\n\nQuestion: {user_query}"
+                )
+                .content.strip()
+                .lower()
             )
-            print("✅ Vector store loaded successfully.")
-            return db
-        except Exception as e:
-            print(f"❌ Error loading vector store: {e}")
-            return None  # Or handle the error as appropriate
 
-    def query(self, query):
-        """Queries the vector store and returns an answer, or a default message."""
-        if not self.db:
-            return "❌ Vector store not loaded. Please ingest data first."
+            if "no" in relevance_check:
+                return "This is not related to Stevens Institute Of Technology."
 
-        if not self.retriever:
-            return "❌ Retriever not initialized.  Check vector store loading."
+            # Step 2: Get relevant documents
+            relevant_docs = self.retriever.get_relevant_documents(user_query)
+            context = "\n".join([doc.page_content for doc in relevant_docs[:5]])
 
-        # Fetch relevant documents
-        relevant_docs = self.retriever.get_relevant_documents(query)
-
-        if not relevant_docs:
-            return "This is not related to Stevens Institute Of Technology."
-
-        # Limit the number of documents to avoid exceeding context window
-        num_docs = min(5, len(relevant_docs))  # Or adjust this number
-        relevant_docs = relevant_docs[:num_docs]
-
-        context = "\n".join([doc.page_content for doc in relevant_docs])  # Combine docs
-
-        # Pass the question and combined context to the LLMChain
-        try:
+            # Step 3: Generate response
             response = self.llm_chain.invoke(
-                {"context": context, "question": query}
-            )  # use invoke instead of run
+                {"context": context, "question": user_query}
+            )["text"].strip()
 
-            # Basic cleaning - remove extra whitespace
-            response = response["text"].strip()  # Access output using "text"
+            # Step 4: Add advisory note if critical topic
+            critical_keywords = [
+                "fees",
+                "admission",
+                "tuition",
+                "scholarship",
+                "financial aid",
+            ]
+            if any(kw in user_query.lower() for kw in critical_keywords):
+                response += "\n\n[INFO]: Please contact the relevant department for more details."
 
-            # Check if the response contains lab names (crude check)
-            if (
-                "lab" not in response.lower()
-                and "I don't know" not in response.lower()
-                and "I don't have information" not in response.lower()
-            ):
-                return "I am unable to provide information"
-
-            return response  # Return the cleaned response
+            return response
 
         except Exception as e:
-            print(f"❌ Error during LLMChain run: {e}")
-            return "An error occurred while processing your request."
+            return f"❌ Error while generating response: {e}"

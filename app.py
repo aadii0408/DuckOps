@@ -347,18 +347,16 @@
 
 
 # try 4-----------------------------------------------------------
-
-
 import streamlit as st
 import os
 from dotenv import load_dotenv
-from agent import StevensAgent  # Import the StevensAgent class
-import ingest  # Import the ingest module
+from agent import StevensAgent
+import ingest
 
-# Load API key
+# Load environment variables
 load_dotenv()
-st.set_page_config(page_title="Stevens AI Chatbot", page_icon="🎓", layout="wide")
 
+st.set_page_config(page_title="Stevens AI Chatbot", page_icon="🎓", layout="wide")
 st.title("Stevens AI Chatbot 🤖")
 st.subheader("Ask me anything about Stevens Institute!")
 
@@ -367,16 +365,15 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
 
-# Function to initialize the agent (or re-initialize if needed)
+# Initialize or reinitialize the chatbot
 def initialize_agent():
     if "agent" not in st.session_state or not os.path.exists("faiss_index"):
-        print("Initializing or Re-initializing agent...")
         try:
             if not os.path.exists("faiss_index"):
                 st.warning(
                     "FAISS index not found. Running data ingestion... This may take a moment."
                 )
-                ingest.ingest_data()  # Run ingestion if the index doesn't exist
+                ingest.ingest_data()
             st.session_state.agent = StevensAgent()
             st.success("Agent initialized successfully!")
         except Exception as e:
@@ -384,17 +381,38 @@ def initialize_agent():
             st.session_state.agent = None
 
 
-# Initialize agent on first run or if the index is missing
 initialize_agent()
 
 # Display chat history
+st.markdown("### Chat History")
 for sender, message in st.session_state.chat_history:
     st.write(f"**{sender}**: {message}")
 
 st.markdown("---")
 
+
+# Ask question callback
+def ask_question():
+    user_input = st.session_state["user_input"]
+    if user_input and st.session_state.agent:
+        response = st.session_state.agent.get_response(user_input)
+        st.session_state.chat_history.append(("You", user_input))
+        st.session_state.chat_history.append(("Stevens AI", response))
+        st.session_state["user_input"] = ""
+    elif not st.session_state.agent:
+        st.error("Agent is not initialized. Try re-ingesting data.")
+
+
+# Input and ask button
+st.text_input("Type your question:", key="user_input")
+st.button("Ask", on_click=ask_question)
+
+st.markdown("---")
+
+# Re-ingest Data button
 if st.button("Re-ingest Data"):
     st.warning("Re-ingesting data. This will clear the existing vector store.")
     ingest.clear_vector_store()
     initialize_agent()
-    st.success("Data re-ingested and agent re-initialized.")
+    st.session_state.chat_history = []
+    st.write("Chat history cleared. You can start a new conversation.")
