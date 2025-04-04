@@ -203,6 +203,15 @@ urls = [
     "https://www.stevens.edu/online-learning",
     "https://thestute.com/",
     "https://www.stevens.edu/public-events",
+    "https://www.stevens.edu/about-stevens/campus-map",
+    "https://www.stevens.edu/directory/graduate-academics/graduate-student-life-services",
+    "https://www.stevens.edu/directory/international-student-and-scholar-services",
+    "https://www.stevens.edu/page-basic/airport-pickup-service-for-new-graduate-students",
+    "https://www.stevens.edu/maintain-your-f-1-status",
+    "https://www.stevens.edu/travel-information",
+    "https://www.stevens.edu/discover-stevens/news",
+    "https://www.stevens.edu/grad-student-resources",
+    "https://www.stevens.edu/graduate-corporate-education",
 ]
 
 
