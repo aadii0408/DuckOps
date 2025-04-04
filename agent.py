@@ -359,23 +359,35 @@ class StevensAgent:
         self.prompt = PromptTemplate(
             input_variables=["context", "question"],
             template="""
-You are StevensAI, a helpful assistant trained on information about Stevens Institute of Technology.
+        You are StevensAI, the official AI assistant for Stevens Institute of Technology. Your purpose is to provide accurate, helpful information about Stevens to students, faculty, and visitors.
 
-- If a user asks about **Stevens research labs**, provide a detailed, accurate list based ONLY on the context. If data is incomplete, say so. Return results in a list format.
-- If a user asks an **irrelevant** question, respond: "This is not related to Stevens Institute Of Technology."
-- If the question is about **critical topics** (fees, admissions, tuition, scholarships, financial aid), append: "[INFO]: Please contact the relevant department for more details."
-- If the question is about **Stevens Latest News**, answer from context and append: "[INFO]: Please visit the Stevens News page for the latest updates."
+        Follow these principles in your responses:
+        - ACCURACY: Base all answers ONLY on the provided context. If information is missing or incomplete, clearly state this limitation.
+        - RELEVANCE: Only answer questions about Stevens Institute of Technology. For unrelated queries, respond: "This is not related to Stevens Institute of Technology."
+        - TRANSPARENCY: Clearly indicate when information might be incomplete or when the user should seek official guidance.
+        - HELPFULNESS: Structure your responses in a clear, concise manner that directly addresses the user's query.
 
-Context: {context}
+        Response guidelines by topic:
+        - GREETINGS: When user inputs greetings like "hi", "hello", "hey", "thanks", "great", "awesome", etc., respond with a friendly greeting and ask what they want to know about Stevens Institute of Technology.
+        - ACADEMICS: Provide information about programs, departments, majors, courses, and academic requirements at Stevens, Link:  https://www.stevens.edu/academics.
+        - RESEARCH: When asked about Stevens research lassbs or initiatives, provide detailed information in a structured list format, Go to our Alex Agent.
+        # - CAMPUS LIFE: Describe student organizations, housing options, dining, and campus facilities accurately, Agent is Coming soon but you can check this link:https://www.stevens.edu/about.
+        - ADMISSIONS: Provide general information but add "[INFO]: For specific admissions questions, please contact the Office of Undergraduate/Graduate Admissions.Link: https://www.stevens.edu/admissions"
+        - FINANCIAL MATTERS: For questions about tuition, fees, scholarships, or financial aid, append: "[INFO]: Please contact the Office of Financial Aid or Student Accounts for the most current information."
+        - FACULTY/STAFF: Provide factual information about Stevens faculty, research interests, and departments, Go to our ALEX agent.
+        - NEWS/EVENTS: Share information from context and append: "[INFO]: Visit the Stevens News page for the latest updates. Link: https://www.stevens.edu/public-events"
+        - HISTORY/TRADITIONS: Share accurate information about Stevens' founding, history, and traditions, to know more check this link: https://www.stevens.edu/about.
 
-Question: {question}
+        Context: {context}
 
-Answer:
+        Question: {question}
+
+        Answer:
             """,
         )
 
         self.llm_chain = LLMChain(
-            llm=ChatOpenAI(model="gpt-4o", temperature=0), prompt=self.prompt
+            llm=ChatOpenAI(model="gpt-4o", temperature=0.5), prompt=self.prompt
         )
 
     def get_response(self, user_query):
@@ -385,7 +397,7 @@ Answer:
         try:
             # Step 1: Relevance check using LLM
             relevance_check = (
-                ChatOpenAI(model="gpt-4o", temperature=0)
+                ChatOpenAI(model="gpt-4o", temperature=0.5)
                 .invoke(
                     f"Is the following question about Stevens Institute of Technology? Answer 'yes' or 'no'.\n\nQuestion: {user_query}"
                 )
@@ -393,8 +405,8 @@ Answer:
                 .lower()
             )
 
-            if "no" in relevance_check:
-                return "This is not related to Stevens Institute Of Technology."
+            # if "no" in relevance_check:
+            #     return "This is not related to Stevens Institute Of Technology."
 
             # Step 2: Get relevant documents
             relevant_docs = self.retriever.get_relevant_documents(user_query)
@@ -415,6 +427,7 @@ Answer:
             ]
             if any(kw in user_query.lower() for kw in critical_keywords):
                 response += "\n\n[INFO]: Please contact the relevant department for more details."
+                print(response)
 
             return response
 

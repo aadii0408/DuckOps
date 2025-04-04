@@ -240,7 +240,7 @@
     <text x="140" y="185" font-family="Arial" font-size="12" fill="white" text-anchor="middle">Your Stevens Advisor</text>
 </svg>
                     <div class="image-overlay"></div>
-                    <button class="try-now-button">Try Now</button>
+                    <a href="http://localhost:8502/" class="try-now-button">Try Now</a>
                 </div>
                 <div class="agent-card-content">
                     <div class="agent-card-name">Emma</div>
@@ -344,7 +344,7 @@
             <use href="#resumeIcon" x="180" y="50" width="40" height="50" opacity="0.7" transform="rotate(15 200 70)"/>
         </svg>
                     <div class="image-overlay"></div>
-                    <button class="try-now-button">Try Now</button>
+                    <a href="http://localhost:8501/" class="try-now-button">Try Now</a>
                 </div>
                 <div class="agent-card-content">
                     <div class="agent-card-name">Jack</div>
@@ -370,7 +370,7 @@
             button.addEventListener('click', function() {
                 const agentName = this.closest('.agent-card').querySelector('.agent-card-name').textContent;
                 const agentTask = this.closest('.agent-card').querySelector('.agent-card-task').textContent;
-                alert(`Starting ${agentName}: ${agentTask}`);
+
             });
 
         });
