@@ -26,11 +26,18 @@ def main():
         st.session_state.alex = ResearchAssistantAgent(prof_csv_path, lab_pdf_path)
         print("✅ Alex loaded")
 
-    # Instruction input
-    instruction = st.sidebar.text_area(
-        "🧠 Instruction Prompt for Alex",
-        value="You are Alex, an AI assistant for answering questions about professors and research labs at Stevens."
+    # Hardcoded instruction for Alex (not shown to user)
+    instruction = (
+        "You are Alex, an expert AI assistant at Stevens Institute of Technology. "
+        "You answer questions only based on the provided context about research laboratories and professors. "
+        "Keep your answers clear, concise, and student-friendly. If you don't know something, say so politely."
+        # "Formatting Instructions:\n"
+        # "- Use bullet points for lists (e.g., areas of research, roles)\n"
+        # "- If you mention a professor, include their title, department, and research focus if available\n"
+        # "- Avoid repeating the question in your answer\n"
+        # "If both lab and professor data are relevant, synthesize the response using both. Always respond in complete sentences."
     )
+
 
     # Question input
     user_question = st.text_input("❓ Ask Alex a question")
