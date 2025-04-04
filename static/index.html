@@ -303,10 +303,10 @@
     <section id="home" class="hero">
         <div class="badge">AI-Powered DuckBOT</div>
         <h1>
-            <span>AI Platform for</span> Stevens Intelligence
+            <span>AI Agents for</span> Stevens Intelligence
         </h1>
         <p>DuckBOT is a leading AI-powered chatbot solution built exclusively for Stevens Institute Of Technology. Our platform enhances student engagement, answers common questions, and provides 24/7 support for students.</p>
-        <a href="#" class="hero-cta" onclick="redirectToDemo()">Try Demo</a>
+        <a href="agent.html" class="hero-cta" onclick="redirectToDemo()">Try Demo</a>
     </section>
 
     <!-- Features Section -->
@@ -348,6 +348,99 @@
         </div>
     </section>
 
+    <section id="about" class="about-section">
+        <div class="container">
+            <h2 class="section-title">Meet <span class="highlight">DuckOps</span></h2>
+            <p class="about-description">At DuckOps, we are passionate about building AI-powered solutions that redefine the way businesses operate. Our flagship product, <strong>DuckBot</strong>, is designed to provide intelligent, real-time assistance for various business operations,
+                leveraging cutting-edge AI and automation.</p>
+
+            <div class="team-grid">
+                <div class="team-member" data-aos="fade-up">
+                    <img src="Aadi.jpg" alt="Aditya Champaneri">
+                    <h3>Aditya Champaneri</h3>
+                    <p>AI & Data</p>
+                </div>
+                <div class="team-member" data-aos="fade-up" data-aos-delay="100">
+                    <img src="rushi.jpg" alt="Rushi Lunagariya">
+                    <h3>Rushi Lunagariya</h3>
+                    <p>Data & Machine Learning</p>
+                </div>
+                <div class="team-member" data-aos="fade-up" data-aos-delay="200">
+                    <img src="charmil.jpg" alt="Charmil Patel">
+                    <h3>Charmil Patel</h3>
+                    <p>Full Stack & Cloud</p>
+                </div>
+                <div class="team-member" data-aos="fade-up" data-aos-delay="300">
+                    <img src="nikhil.jpg" alt="Nikhil Shihora">
+                    <h3>Nikhil Shihora</h3>
+                    <p>Finance & Marketing</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <style>
+        .about-section {
+            text-align: center;
+            padding: 80px 20px;
+            background: #f9f9f9;
+        }
+        
+        .highlight {
+            color: #ff6600;
+            font-weight: bold;
+        }
+        
+        .about-description {
+            font-size: 1.2em;
+            max-width: 800px;
+            margin: 0 auto 40px;
+        }
+        
+        .team-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .team-member {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out;
+            text-align: center;
+        }
+        
+        .team-member:hover {
+            transform: scale(1.05);
+        }
+        
+        .team-member img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .team-member h3 {
+            margin-top: 15px;
+            font-size: 1.2em;
+            color: #333;
+        }
+        
+        .team-member p {
+            color: #777;
+            font-size: 1em;
+        }
+    </style>
+
+    <script>
+        AOS.init();
+    </script>
+
+
     <!-- Footer -->
     <footer>
         <p>&copy; 2025 DuckBOT. All rights reserved.</p>
@@ -356,7 +449,7 @@
     <script>
         function redirectToDemo() {
             // Redirect to the Streamlit app (replace with your actual Streamlit URL)
-            window.location.href = "http://localhost:8504/";
+            window.location.href = "agent.html";
         }
     </script>
 </body>
